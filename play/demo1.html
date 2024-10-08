@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud + AI + Mates Animation</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #1c92d2, #f2fcfe);
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let mouseX = width / 2;
+    let mouseY = height / 2;
+    let ripples = [];
+    
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Mouse move event listener
+    window.addEventListener('mousemove', (event) => {
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    });
+
+    // Mouse click event listener for ripple effect
+    window.addEventListener('click', (event) => {
+      ripples.push({ x: event.clientX, y: event.clientY, radius: 0, alpha: 1 });
+    });
+
+    const text = "Cloud + AI + Mates";
+    let time = 0;
+
+    function draw() {
+      // Adding color-changing gradient background
+      const bgGradient = ctx.createLinearGradient(0, 0, width, height);
+      bgGradient.addColorStop(0, 'hsl(200, 80%, 70%)');
+      bgGradient.addColorStop(1, 'hsl(220, 80%, 90%)');
+      ctx.fillStyle = bgGradient;
+      // Adding smooth fading trail
+      // Background fill with gradient
+      ctx.fillStyle = bgGradient;
+      ctx.fillRect(0, 0, width, height);
+
+      const maxTextWidth = width * 0.75 / text.length; ctx.font = `bold ${maxTextWidth}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Smooth and varied movement for letters
+      for (let i = 0; i < text.length; i++) {
+        const letter = text[i];
+        const angle = (time * 0.5 + i * 30) * Math.PI / 180;
+        const radius = 10 + 10 * Math.sin(time * 0.02 + i);
+        const offsetX = Math.cos(angle) * (50 + 20 * Math.cos(time * 0.01 + i)) + (mouseX - width / 2) * 0.05;
+        const offsetY = Math.sin(angle) * (50 + 20 * Math.sin(time * 0.01 + i)) + (mouseY - height / 2) * 0.05;
+
+ctx.fillStyle = `hsl(${(time + i * 20) % 360}, 100%, 60%)`;
+ctx.shadowColor = `hsl(${(time + i * 20) % 360}, 100%, 50%)`;
+
+        ctx.shadowBlur = 15 + 5 * Math.sin(time * 0.02);
+        ctx.save();
+        ctx.translate(width / 2 + offsetX, height / 2 + offsetY);
+        ctx.fillText(letter, (i - text.length / 2) * maxTextWidth * 1.1, 0);
+        ctx.restore();
+      }
+
+      // Adding smoother particles with depth and mouse interaction
+      for (let j = 0; j < 25; j++) {
+        const particleAngle = time * 0.02 + j;
+        const particleRadius = 150 + 50 * Math.cos(time * 0.01 + j);
+        const particleX = width / 2 + Math.cos(particleAngle) * particleRadius + (mouseX - width / 2) * 0.02;
+        const particleY = height / 2 + Math.sin(particleAngle) * particleRadius + (mouseY - height / 2) * 0.02;
+        const particleSize = 2 + Math.sin(time * 0.02 + j) * 1.5;
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + Math.sin(time * 0.01 + j) * 0.2})`;
+        ctx.beginPath();
+        ctx.arc(particleX, particleY, particleSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Adding ripple effect
+      // Adding rotating ring effect around the mouse cursor
+      for (let k = 0; k < 10; k++) {
+        const ringAngle = time * 0.05 + k * Math.PI / 5;
+        const ringX = mouseX + Math.cos(ringAngle) * 30;
+        const ringY = mouseY + Math.sin(ringAngle) * 30;
+        ctx.fillStyle = `rgba(255, 255, 255, 0.7)`;
+        ctx.beginPath();
+        ctx.arc(ringX, ringY, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      for (let i = 0; i < ripples.length; i++) {
+        const ripple = ripples[i];
+        ctx.beginPath();
+        ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${ripple.alpha})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ripple.radius += 2;
+        ripple.alpha -= 0.02;
+        if (ripple.alpha <= 0) {
+          ripples.splice(i, 1);
+          i--;
+        }
+      }
+
+      // Adding magnifying glass effect with translucency and stronger distortion
+      // Adding glowing ring that pulses around the text
+      const glowRadius = 10 + 5 * Math.sin(time * 0.1);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.7)';
+      ctx.lineWidth = glowRadius;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = 'rgba(255, 215, 0, 1)';
+      ctx.beginPath();
+      ctx.arc(width / 2, height / 2, Math.min(width, height) / 4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      const magnifierRadius = 100;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(mouseX, mouseY, magnifierRadius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.fill();
+      ctx.clip();
+      ctx.drawImage(canvas, mouseX - magnifierRadius * 1.5, mouseY - magnifierRadius * 1.5, magnifierRadius * 3, magnifierRadius * 3, mouseX - magnifierRadius, mouseY - magnifierRadius, magnifierRadius * 2, magnifierRadius * 2);
+      ctx.restore();
+
+      time += 1;
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  </script>
+</body>
+</html>
